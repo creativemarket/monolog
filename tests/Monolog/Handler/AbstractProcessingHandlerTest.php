@@ -55,6 +55,19 @@ class AbstractProcessingHandlerTest extends TestCase
     }
 
     /**
+     * @covers Monolog\Handler\AbstractProcessingHandler::handle
+     */
+    public function testHandleIsFalseWhenNotHandledWithOverridenIsHandlingMethod()
+    {
+        $handler = $this->getMockForAbstractClass('Monolog\Handler\AbstractProcessingHandlerMock_OverriddenIsHandling', array(Logger::WARNING, false));
+
+        $this->assertTrue($handler->isHandling($this->getRecord(Logger::DEBUG, 'handle')));
+        $this->assertFalse($handler->isHandling($this->getRecord(Logger::DEBUG, 'dont_handle')));
+        $this->assertTrue($handler->handle($this->getRecord(Logger::DEBUG, 'handle')));
+        $this->assertFalse($handler->handle($this->getRecord(Logger::DEBUG, 'dont_handle')));
+    }
+
+    /**
      * @covers Monolog\Handler\AbstractProcessingHandler::processRecord
      */
     public function testProcessRecord()
@@ -76,4 +89,11 @@ class AbstractProcessingHandlerTest extends TestCase
         $handler->handle($this->getRecord());
         $this->assertEquals(5, count($handledRecord['extra']));
     }
+}
+
+class AbstractProcessingHandlerMock_OverriddenIsHandling extends \Monolog\Handler\AbstractProcessingHandler {
+    public function isHandling(array $record) {
+        return $record['message'] === 'handle';
+    }
+    public function write(array $record) { }
 }
